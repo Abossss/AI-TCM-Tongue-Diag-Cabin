@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI中医舌诊自助舱</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #8b5a2b;
+            --secondary-color: #d2b48c;
+            --accent-color: #cd5c5c;
+            --light-color: #f5f5dc;
+            --dark-color: #4a3728;
+        }
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.5;
+            font-size: 14px;
+            color: var(--primary-color);
+            z-index: 1000;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            border-bottom: 4px solid var(--secondary-color);
+        }
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .main-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .preview-container {
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        .preview-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: none;
+            border: 3px solid var(--secondary-color);
+        }
+        .drop-zone {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(210, 180, 140, 0.1);
+        }
+        .drop-zone:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(210, 180, 140, 0.2);
+        }
+        .drop-zone i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: var(--dark-color);
+            border-color: var(--dark-color);
+        }
+        .form-select, .form-control {
+            border-color: var(--secondary-color);
+        }
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(139, 90, 43, 0.25);
+        }
+        .feature-box {
+            background-color: rgba(210, 180, 140, 0.1);
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        .feature-icon {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary-color);
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+    </style>
+    <style>
+        .dataset-browser {
+            padding: 1rem;
+            background-color: rgba(210, 180, 140, 0.1);
+            border-radius: 8px;
+        }
+        .dataset-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .dataset-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .dataset-image:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+        .dataset-image.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 水印标记 -->
+    <div class="watermark">参考系Abossss</div>
+    <!-- 页头 -->
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="logo-text">AI中医舌诊自助舱</div>
+                    <div class="subtitle">传统中医 · 现代科技 · 个性化养生</div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span><i class="fas fa-clock"></i> 3分钟舌诊体质辨识</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <div class="main-container">
+            <h2 class="section-title"><i class="fas fa-camera"></i> 舌象采集与分析</h2>
+            
+            <form id="tongueAnalysisForm" action="/analyze" method="post" enctype="multipart/form-data">
+                <div class="row">
+                    <!-- 左侧：舌象上传 -->
+                    <div class="col-md-6">
+                        <ul class="nav nav-tabs mb-3" id="imageSourceTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-pane" type="button" role="tab">上传图片</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="dataset-tab" data-bs-toggle="tab" data-bs-target="#dataset-pane" type="button" role="tab">数据集库</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="imageSourceContent">
+                            <!-- 上传图片面板 -->
+                            <div class="tab-pane fade show active" id="upload-pane" role="tabpanel">
+                                <div class="drop-zone" id="dropZone">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>点击或拖拽舌象数据到此处上传</p>
+                                    <p class="text-muted small">支持JPG、PNG、XML、JSON格式，建议使用自然光下拍摄的清晰舌象图片</p>
+                                    <input type="file" id="fileInput" name="tongue_data" class="d-none" accept=".jpg,.jpeg,.png,.xml,.json">
+                                </div>
+                            </div>
+                            
+                            <!-- 数据集库面板 -->
+                            <div class="tab-pane fade" id="dataset-pane" role="tabpanel">
+                                <div class="dataset-browser">
+                                    <div class="mb-3">
+                                        <label for="categorySelect" class="form-label">选择类别：</label>
+                                        <select class="form-select" id="categorySelect" name="category">
+                                            <option value="">请选择类别...</option>
+                                        </select>
+                                    </div>
+                                    <div class="dataset-images" id="datasetImages">
+                                        <!-- 图片将通过JavaScript动态加载 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-container text-center" id="previewContainer">
+                            <img id="previewImage" class="preview-image shadow-sm" alt="舌象预览">
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧：环境因素 -->
+                    <div class="col-md-6">
+                        <div class="mb-4">
+                            <label for="regionSelect" class="form-label">您所在的地域：</label>
+                            <select class="form-select" id="regionSelect" name="region">
+                                {% for region in regions %}
+                                <option value="{{ loop.index0 }}">{{ region }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="seasonSelect" class="form-label">当前季节：</label>
+                            <select class="form-select" id="seasonSelect" name="season">
+                                {% for season in seasons %}
+                                <option value="{{ loop.index0 }}" {% if loop.index0 == current_season %}selected{% endif %}>{{ season }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn" disabled>
+                                <i class="fas fa-microscope"></i> 开始舌象分析
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- 加载动画 -->
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner-border loading-spinner" role="status">
+                    <span class="visually-hidden">正在分析...</span>
+                </div>
+                <p class="mt-3">正在进行舌象分析，请稍候...</p>
+            </div>
+            
+            <!-- 系统特点介绍 -->
+            <div class="mt-5">
+                <h3 class="section-title"><i class="fas fa-star"></i> 系统特点</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <i class="fas fa-palette feature-icon"></i>
+                            <strong>CIE颜色标准</strong>：首次将国际照明委员会颜色标准引入舌象分析
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <i class="fas fa-camera-retro feature-icon"></i>
+                            <strong>多光谱分析</strong>：采用RGB+近红外+紫外多光谱技术，捕捉更多舌象细节
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <i class="fas fa-map-marked-alt feature-icon"></i>
+                            <strong>地域因素</strong>：考虑不同地域的气候特点，提供针对性养生建议
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <i class="fas fa-calendar-alt feature-icon"></i>
+                            <strong>季节调整</strong>：根据四季变化动态调整体质辨识和养生方案
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">© 2025 AI中医舌诊自助舱 | 传统中医 · 现代科技 · 个性化养生</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedImage = null;
+
+        // 加载测试集类别
+        function loadTestCategories() {
+            fetch('/get_test_categories')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.categories) {
+                        const select = document.getElementById('categorySelect');
+                        data.categories.forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = category;
+                            option.textContent = category;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error('加载类别失败:', error));
+        }
+
+        // 加载类别下的图片
+        function loadCategoryImages(category) {
+            fetch(`/get_test_images/${category}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.images) {
+                        const container = document.getElementById('datasetImages');
+                        container.innerHTML = '';
+                        data.images.forEach(imageUrl => {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.className = 'dataset-image';
+                            img.onclick = () => selectDatasetImage(img, imageUrl);
+                            container.appendChild(img);
+                        });
+                    }
+                })
+                .catch(error => console.error('加载图片失败:', error));
+        }
+
+        // 选择数据集图片
+        function selectDatasetImage(imgElement, imageUrl) {
+            // 移除之前选中的图片的选中状态
+            document.querySelectorAll('.dataset-image').forEach(img => {
+                img.classList.remove('selected');
+            });
+            
+            // 添加新选中图片的选中状态
+            imgElement.classList.add('selected');
+            selectedImage = imageUrl;
+            
+            // 更新预览
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = imageUrl;
+            previewImage.style.display = 'block';
+            
+            // 启用分析按钮
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载测试集类别
+            loadTestCategories();
+
+            // 监听类别选择变化
+            document.getElementById('categorySelect').addEventListener('change', function(e) {
+                if (e.target.value) {
+                    loadCategoryImages(e.target.value);
+                }
+            });
+
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const previewContainer = document.getElementById('previewContainer');
+            const previewImage = document.getElementById('previewImage');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const tongueAnalysisForm = document.getElementById('tongueAnalysisForm');
+            
+            // 点击上传区域触发文件选择
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 拖拽文件到上传区域
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#8b5a2b';
+                dropZone.style.backgroundColor = 'rgba(210, 180, 140, 0.3)';
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = '#d2b48c';
+                dropZone.style.backgroundColor = 'rgba(210, 180, 140, 0.1)';
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#d2b48c';
+                dropZone.style.backgroundColor = 'rgba(210, 180, 140, 0.1)';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect(files);
+                }
+            });
+            
+            // 文件选择处理
+            fileInput.addEventListener('change', (e) => {
+                const files = e.target.files;
+                handleFileSelect(files);
+            });
+            
+            // 表单提交处理
+            tongueAnalysisForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                loadingIndicator.style.display = 'block';
+                
+                const formData = new FormData(tongueAnalysisForm);
+                
+                fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    loadingIndicator.style.display = 'none';
+                    // 将返回的HTML直接替换当前页面内容
+                    document.documentElement.innerHTML = html;
+                })
+                .catch(error => {
+                    loadingIndicator.style.display = 'none';
+                    alert('分析过程中发生错误，请重试');
+                    console.error('Error:', error);
+                });
+            });
+            
+            function handleFileSelect(files) {
+                if (files.length === 0) return;
+                
+                const file = files[0];
+                const fileType = file.name.split('.').pop().toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png'].includes(fileType);
+                const isXml = fileType === 'xml';
+                const isJson = fileType === 'json';
+                
+                if (!isImage && !isXml && !isJson) {
+                    alert('请上传JPG、PNG、XML或JSON格式的文件');
+                    return;
+                }
+                
+                if (isImage) {
+                    // 图片预览
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const previewImage = document.getElementById('previewImage');
+                        previewImage.src = e.target.result;
+                        previewImage.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                
+                } else {
+                    // XML或JSON文件预览
+                    const fileIcon = isXml ? 'file-code' : 'file-alt';
+                    const fileTypeText = isXml ? 'XML' : 'JSON';
+                    
+                    const filePreview = document.createElement('div');
+                    filePreview.className = 'alert alert-info';
+                    filePreview.innerHTML = `
+                        <i class="fas fa-${fileIcon} me-2"></i>
+                        已选择${fileTypeText}文件: <strong>${file.name}</strong>
+                    `;
+                    previewContainer.appendChild(filePreview);
+                    
+                    // 如果是JSON或XML，可以尝试读取并显示部分内容
+                    if (file.size < 100000) { // 限制大小，避免过大文件
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                let content = e.target.result;
+                                let previewContent = '';
+                                
+                                if (isJson) {
+                                    // 尝试格式化JSON
+                                    const jsonObj = JSON.parse(content);
+                                    if (jsonObj.tongue_features) {
+                                        previewContent = `<div class="mt-2 text-start">
+                                            <small>舌象特征预览:</small>
+                                            <pre class="bg-light p-2 rounded" style="max-height:150px;overflow:auto;font-size:0.8rem;">${JSON.stringify(jsonObj.tongue_features, null, 2)}</pre>
+                                        </div>`;
+                                    }
+                                } else if (isXml) {
+                                    // 显示XML的前几行
+                                    const lines = content.split('\n').slice(0, 10).join('\n');
+                                    previewContent = `<div class="mt-2 text-start">
+                                        <small>XML内容预览 (前10行):</small>
+                                        <pre class="bg-light p-2 rounded" style="max-height:150px;overflow:auto;font-size:0.8rem;">${lines}</pre>
+                                    </div>`;
+                                }
+                                
+                                if (previewContent) {
+                                    const contentPreview = document.createElement('div');
+                                    contentPreview.innerHTML = previewContent;
+                                    previewContainer.appendChild(contentPreview);
+                                }
+                            } catch (err) {
+                                console.error('预览文件内容时出错:', err);
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                }
+                
+                // 启用分析按钮
+                analyzeBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>舌象分析结果 - AI中医舌诊自助舱</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #8b5a2b;
+            --secondary-color: #d2b48c;
+            --accent-color: #cd5c5c;
+            --light-color: #f5f5dc;
+            --dark-color: #4a3728;
+        }
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.5;
+            font-size: 14px;
+            color: var(--primary-color);
+            z-index: 1000;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            border-bottom: 4px solid var(--secondary-color);
+        }
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .main-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .tongue-image {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 3px solid var(--secondary-color);
+        }
+        .constitution-card {
+            border-left: 4px solid var(--primary-color);
+            background-color: rgba(210, 180, 140, 0.1);
+            border-radius: 0 8px 8px 0;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .constitution-type {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .constitution-probability {
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        .advice-section {
+            background-color: rgba(210, 180, 140, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            white-space: pre-line;
+        }
+        .advice-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: var(--dark-color);
+            border-color: var(--dark-color);
+        }
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .feature-icon {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        .environment-info {
+            background-color: rgba(210, 180, 140, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+        .print-section {
+            text-align: center;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 水印标记 -->
+    <div class="watermark">参考系Abossss</div>
+    <!-- 页头 -->
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="logo-text">AI中医舌诊自助舱</div>
+                    <div class="subtitle">传统中医 · 现代科技 · 个性化养生</div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span><i class="fas fa-clock"></i> 分析完成</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="container">
+        <div class="main-container">
+            <h2 class="section-title"><i class="fas fa-clipboard-check"></i> 舌象分析结果</h2>
+            
+            <!-- 环境信息 -->
+            <div class="mb-4">
+                <span class="environment-info"><i class="fas fa-map-marker-alt"></i> 地域: {{ region }}</span>
+                <span class="environment-info"><i class="fas fa-calendar-alt"></i> 季节: {{ season }}</span>
+            </div>
+            
+            <div class="row">
+                <!-- 左侧：舌象图片 -->
+                <div class="col-md-5">
+                    <div class="text-center mb-4">
+                        <img src="{{ result.image_url }}" class="tongue-image shadow" alt="舌象图片">
+                        <p class="mt-2 text-muted">舌象采集图片</p>
+                    </div>
+                </div>
+                
+                <!-- 右侧：分析结果 -->
+                <div class="col-md-7">
+                    <h4 class="mb-3">体质辨识结果</h4>
+                    
+                    <!-- 主要体质 -->
+                    <div class="constitution-card">
+                        <div class="constitution-type">{{ result.top_constitutions[0].type }}</div>
+                        <div class="constitution-probability">匹配度: {{ result.top_constitutions[0].probability }}</div>
+                        <div class="mt-2">
+                            <strong>舌象特征:</strong> {{ result.top_constitutions[0].features }}
+                        </div>
+                    </div>
+                    
+                    <!-- 次要体质 -->
+                    <div class="row">
+                        {% for constitution in result.top_constitutions[1:] %}
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ constitution.type }}</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">匹配度: {{ constitution.probability }}</h6>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 养生建议 -->
+            <div class="mt-4">
+                <h3 class="section-title"><i class="fas fa-leaf"></i> 个性化养生建议</h3>
+                <div class="advice-section">
+                    <div class="advice-title"><i class="fas fa-heartbeat"></i> 根据您的体质、地域和季节，我们为您提供以下养生建议：</div>
+                    {{ result.advice }}
+                </div>
+            </div>
+            
+            <!-- 打印和返回按钮 -->
+            <div class="print-section">
+                <button class="btn btn-primary me-2" onclick="window.print()">
+                    <i class="fas fa-print"></i> 打印分析报告
+                </button>
+                <a href="/" class="btn btn-outline-primary">
+                    <i class="fas fa-redo"></i> 重新检测
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">© 2023 AI中医舌诊自助舱 | 传统中医 · 现代科技 · 个性化养生</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
